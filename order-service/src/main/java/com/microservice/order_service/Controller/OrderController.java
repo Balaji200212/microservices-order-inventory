@@ -1,19 +1,21 @@
 package com.microservice.order_service.Controller;
-import com.microservice.order_service.client.InventoryClient;
+import com.microservice.order_service.dto.OrderRequest;
+import com.microservice.order_service.model.Order;
+import com.microservice.order_service.service.OrderService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
 
-    private final InventoryClient inventoryClient;
+    private final OrderService orderService;
 
-    public OrderController(InventoryClient inventoryClient) {
-        this.inventoryClient = inventoryClient;
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
     }
 
-    @GetMapping("/check/{productId}")
-    public String checkProduct(@PathVariable Long productId) {
-        return inventoryClient.getInventory(productId);
+    @PostMapping
+    public Order createOrder(@RequestBody OrderRequest request) {
+        return orderService.createOrder(request);
     }
 }
