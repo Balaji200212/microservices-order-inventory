@@ -1,11 +1,12 @@
 package com.microservice.order_service.exception;
 
+import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
+import static java.time.LocalDateTime.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -15,13 +16,28 @@ public class GlobalExceptionHandler {
             InsufficientStockException exception) {
 
         ErrorResponse response = new ErrorResponse(
-                LocalDateTime.now(),
+                now(),
                 201,
                 exception.getMessage()
         );
 
         return ResponseEntity
                 .status(HttpStatus.OK)
+                .body(response);
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<ErrorResponse> handleFeignException(
+            FeignException exception) {
+
+        ErrorResponse response = new ErrorResponse(
+                now(),
+                201,
+                "Inventory service is currently unavailable"
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(response);
     }
 }
