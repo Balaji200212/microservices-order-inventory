@@ -1,6 +1,6 @@
-package com.microservice.invevntory_service.Repository;
+package com.microservice.inventory_service.Repository;
 
-import com.microservice.invevntory_service.model.Inventory;
+import com.microservice.inventory_service.model.Inventory;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -22,5 +22,9 @@ public class InventoryRepository {
                 .filter(inventory -> inventory.getProductId().equals(productId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public List<Inventory> findAll() {
+        return List.copyOf(inventories);
     }
 }

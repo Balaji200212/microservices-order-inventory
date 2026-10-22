@@ -6,6 +6,8 @@ import com.microservice.order_service.exception.InsufficientStockException;
 import com.microservice.order_service.model.Order;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class OrderService {
 
@@ -32,5 +34,9 @@ public class OrderService {
         order.setQuantity(request.getQuantity());
         order.setStatus("CREATED");
         return order;
+    }
+
+    public List<InventoryResponse> getAvailableProducts() {
+        return inventoryClient.getAllInventory();
     }
 }

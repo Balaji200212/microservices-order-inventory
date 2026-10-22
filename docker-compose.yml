@@ -1,0 +1,102 @@
+services:
+  eurekaServer:
+    build:
+      context: ./eurekaServer
+      dockerfile: Dockerfile
+    image: eureka-server:1.0
+    environment:
+      EUREKA_HOSTNAME: eurekaServer
+    ports:
+      - "8761:8761"
+    restart: unless-stopped
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
+    image: inventory-service:1.0
+    environment:
+      EUREKA_URL: http://eurekaServer:8761/eureka/
+      INSTANCE_HOSTNAME: inventory-service
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - eurekaServer
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    image: order-service:1.0
+    environment:
+      EUREKA_URL: http://eurekaServer:8761/eureka/
+      INSTANCE_HOSTNAME: order-service
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - eurekaServer
+    restart: unless-stopped
+
+  apiGateway:
+    build:
+      context: ./apiGateway
+      dockerfile: Dockerfile
+    image: api-gateway:1.0
+    environment:
+      EUREKA_URL: http://eurekaServer:8761/eureka/
+      INSTANCE_HOSTNAME: apiGateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eurekaServer
+      - inventory-service
+      - order-service
+    restart: unless-stopped
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.8
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "127.0.0.1:9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "curl -fsS http://localhost:9200 >/dev/null || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.19.8
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "127.0.0.1:5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.19.8
+    volumes:
+      - ./elk/logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./logs:/logs:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  esdata:

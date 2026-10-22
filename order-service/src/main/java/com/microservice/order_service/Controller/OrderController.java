@@ -1,8 +1,11 @@
 package com.microservice.order_service.Controller;
+import com.microservice.order_service.dto.InventoryResponse;
 import com.microservice.order_service.dto.OrderRequest;
 import com.microservice.order_service.model.Order;
 import com.microservice.order_service.service.OrderService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -17,5 +20,11 @@ public class OrderController {
     @PostMapping
     public Order createOrder(@RequestBody OrderRequest request) {
         return orderService.createOrder(request);
+    }
+
+    // NEW API 3: products a customer can order (order-service -> Feign -> inventory-service)
+    @GetMapping("/products")
+    public List<InventoryResponse> getAvailableProducts() {
+        return orderService.getAvailableProducts();
     }
 }
