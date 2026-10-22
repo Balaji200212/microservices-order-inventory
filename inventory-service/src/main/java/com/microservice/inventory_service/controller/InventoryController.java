@@ -20,13 +20,11 @@ public class InventoryController {
         return inventoryService.getInventory(productId);
     }
 
-    // NEW API 1: list every product in stock
     @GetMapping
     public List<Inventory> getAllInventory() {
         return inventoryService.getAllInventory();
     }
 
-    // NEW API 2: check if a quantity is available, e.g. /inventory/1001/in-stock?quantity=5
     @GetMapping("/{productId}/in-stock")
     public StockCheckResponse checkStock(@PathVariable Long productId,
                                          @RequestParam(defaultValue = "1") int quantity) {

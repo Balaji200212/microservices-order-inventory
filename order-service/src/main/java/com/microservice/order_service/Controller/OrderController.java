@@ -22,7 +22,6 @@ public class OrderController {
         return orderService.createOrder(request);
     }
 
-    // NEW API 3: products a customer can order (order-service -> Feign -> inventory-service)
     @GetMapping("/products")
     public List<InventoryResponse> getAvailableProducts() {
         return orderService.getAvailableProducts();
